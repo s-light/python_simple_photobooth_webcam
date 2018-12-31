@@ -81,6 +81,7 @@ def main():
 
     input_filename_default = "./image1.png"
     output_filename_default = "./image1_wm.png"
+    # ./captured/photo_booth-%Y%m%d-%H%M%S.%C"
     watermark_filename_default = "./mark.png"
 
     parser = argparse.ArgumentParser(
