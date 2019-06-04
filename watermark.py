@@ -1,21 +1,22 @@
 #!/usr/bin/env python3
 
 """
-Pack all things related to camera.
+Pack all things related watermarking.
 
 needs
     python3-opencv
 """
 
-# import numpy as np
-import cv2 as cv
 from datetime import datetime
 
+# import numpy as np
+import cv2 as cv
 
-class Cam():
-    """docstring for Cam."""
 
-    WINDOWNAME = "Photobooth"
+class Watermark():
+    """docstring for Watermark."""
+
+    WINDOWNAME = "Watermark Preview"
 
     def __init__(
             self,
@@ -23,7 +24,7 @@ class Cam():
             filename_template="./image_{date_part}.png",
     ):
         """Initialize Instance."""
-        super(Cam, self).__init__()
+        super(Watermark, self).__init__()
 
         self.cap = None
         self.camera_device = camera_device
@@ -37,7 +38,7 @@ class Cam():
         self.stop()
 
     def start(self):
-        """Stop and free resources."""
+        """Starts."""
         # cv.namedWindow(self.WINDOWNAME, cv.WINDOW_NORMAL)
         # cv.namedWindow(self.WINDOWNAME, cv.WINDOW_AUTOSIZE)
         cv.namedWindow(self.WINDOWNAME, cv.WINDOW_FULLSCREEN)
@@ -121,40 +122,30 @@ def main():
     print('Python Version: ' + sys.version)
     print(42*'*')
 
-    cam = 0
-    output_filename_default = "./captured/test_{date_part}.png"
+    input_filename_default = "./watermark.png"
 
     parser = argparse.ArgumentParser(
-        description="test cam."
+        description="test watermark."
     )
 
     parser.add_argument(
-        "-d",
-        "--camera-device",
-        help="specify camera device number to use. (defaults to {})".format(
-            cam
+        "-w",
+        "--watermark",
+        help="specify watermark image. (defaults to {})".format(
+            input_filename_default
         ),
         metavar='INPUT_FILENAME',
-        default=cam
-    )
-    parser.add_argument(
-        "-o",
-        "--output_filename",
-        help="specify a location for the output file (defaults to {})".format(
-            output_filename_default
-        ),
-        metavar='OUTPUT_FILENAME',
-        default=output_filename_default
+        default=input_filename_default
     )
     args = parser.parse_args()
 
     # print(args.output_filename)
-    cam = Cam(
+    watermark = Watermark(
         camera_device=args.camera_device,
-        filename_template=args.output_filename[0]
+        filename_template=args.input_filename[0]
     )
-    cam.start()
-    cam.run()
+    watermark.start()
+    watermark.run()
 
 
 if __name__ == "__main__":
