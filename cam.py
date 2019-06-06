@@ -296,7 +296,7 @@ def main():
 
     cam = '/dev/video_cam_C1'
     output_filename_default = "./captured/test_{date_part}.png"
-    overlay_filename_default = "./mask/picture_frame__HelloWorld.png"
+    overlay_filename_default = "./overlay/picture_frame__HelloWorld.png"
 
     parser = argparse.ArgumentParser(
         description="test cam."
