@@ -8,5 +8,5 @@ XAUTHORITY=/home/pi/.Xauthority \
     $base/cam.py \
     --camera-device="/dev/video_cam_C1" \
     --output_filename="$base/captured/img_{date_part}.png" \
-    --overlay_filename="$base/overlay/picture_frame__HelloWorld.png" \
+    --overlay_filename="$base/mask/picture_frame__HelloWorld.png" \
     --fullscreen
