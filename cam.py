@@ -221,8 +221,11 @@ class Cam():
         # RGBA == 4
         n_channels = 4
         height, width = self.result_image_size
-        self.result_image = np.zeros(
-            (height, width, n_channels), dtype=np.uint8)
+        shape = (height, width, n_channels)
+        # init to black
+        # self.result_image = np.zeros(shape, dtype=np.uint8)
+        # init to white but fully transparent
+        self.result_image = np.full(shape, (255, 255, 255, 0), dtype=np.uint8)
 
     def update_result_image(self):
         """Update result image."""
@@ -233,7 +236,7 @@ class Cam():
         self.overlay_image_alpha(
             self.result_image, self.overlay_img, self.overlay_position)
 
-    def overlay_image_alpha(img, img_overlay, pos):
+    def overlay_image_alpha(self, img, img_overlay, pos):
         """
         Overlay img_overlay on top of img at position.
 

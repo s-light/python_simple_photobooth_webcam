@@ -18,8 +18,8 @@
    inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
    sodipodi:docname="picture_frame.svg"
    inkscape:export-filename="picture_frame__HelloWorld.png"
-   inkscape:export-xdpi="492.81836"
-   inkscape:export-ydpi="492.81836">
+   inkscape:export-xdpi="492.76001"
+   inkscape:export-ydpi="492.76001">
   <title
      id="title817">Picture Frame</title>
   <defs
@@ -132,6 +132,11 @@
          operator="out"
          result="composite2"
          id="feComposite1008" />
+      <feComposite
+         in2="composite2"
+         id="feComposite887"
+         in="composite2"
+         operator="over" />
     </filter>
     <mask
        maskUnits="userSpaceOnUse"
@@ -232,8 +237,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="2.1322302"
-     inkscape:cx="165.20486"
-     inkscape:cy="164.40943"
+     inkscape:cx="147.42843"
+     inkscape:cy="168.72867"
      inkscape:document-units="mm"
      inkscape:current-layer="layer8"
      showgrid="false"
@@ -262,7 +267,7 @@
      fit-margin-left="1"
      fit-margin-bottom="1"
      fit-margin-right="1"
-     showborder="false" />
+     showborder="true" />
   <metadata
      id="metadata5">
     <rdf:RDF>
@@ -412,7 +417,7 @@
      inkscape:groupmode="layer"
      id="layer2"
      inkscape:label="test_bg"
-     style="display:inline"
+     style="display:none"
      transform="translate(0,2)">
     <image
        sodipodi:absref="/home/stefan/mydata/github/photobooth/python_simple_photobooth_webcam/mask/P1550157_crop_1920x1080.jpg"
@@ -446,7 +451,7 @@
      inkscape:groupmode="layer"
      id="layer5"
      inkscape:label="shadow_out"
-     sodipodi:insensitive="true">
+     style="display:inline">
     <use
        transform="translate(1,-211)"
        style="display:inline;stroke-width:0.99999994;filter:url(#filter1010)"
