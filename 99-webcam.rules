@@ -1,0 +1,9 @@
+
+# Logitech C920
+SUBSYSTEM=="video4linux", ATTRS{idVendor}=="046d", ATTRS{idProduct}=="082d", ATTR{name}=="HD Pro Webcam C920", ATTRS{serial}=="A3DA3E8F", ATTR{index}=="0", SYMLINK+="video_cam_C920"
+
+# Kurokesu C1
+SUBSYSTEM=="video4linux", ATTRS{idVendor}=="0c45", ATTRS{idProduct}=="6366", ATTR{name}=="292A-IPC-AR0330*", ATTRS{serial}=="SN0001", ATTR{index}=="0", SYMLINK+="video_cam_C1"
+# SUBSYSTEM=="video4linux", ATTRS{idVendor}=="0c45", ATTRS{idProduct}=="6366", ATTR{name}=="292A-IPC-AR0330*", ATTRS{serial}=="SN0001", ATTR{index}=="1", SYMLINK+="video_cam_C1_index1"
+SUBSYSTEM=="video4linux", ATTRS{idVendor}=="0c45", ATTRS{idProduct}=="6366", ATTR{name}=="292A-IPC-AR0330*", ATTRS{serial}=="SN0001", ATTR{index}=="2", SYMLINK+="video_cam_C1_h264"
+#SUBSYSTEM=="video4linux", ATTRS{idVendor}=="0c45", ATTRS{idProduct}=="6366", ATTR{name}=="292A-IPC-AR0330*", ATTRS{serial}=="SN0001", ATTR{index}=="3", SYMLINK+="video_cam_C1_index3"
