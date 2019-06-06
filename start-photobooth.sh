@@ -6,3 +6,4 @@ XAUTHORITY=/home/pi/.Xauthority \
     /home/pi/python_simple_photobooth_webcam/cam.py \
     --camera-device="/dev/video_cam_C1" \
     --output_filename="/home/pi/python_simple_photobooth_webcam/captured/testpi_{date_part}.jpg"
+    --fullscreen
