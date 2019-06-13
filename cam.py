@@ -496,6 +496,8 @@ def main():
     print(42*'*')
     print(__doc__)
     print(42*'*')
+    print('sys.path: ' + sys.path)
+    print(42*'*')
 
     # print(42*'*')
     # print('debug info')
