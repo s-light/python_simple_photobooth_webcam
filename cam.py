@@ -489,6 +489,7 @@ class Cam():
 def main():
     """Run Main SW."""
     import sys
+    import os
     import argparse
 
     print(42*'*')
@@ -496,7 +497,12 @@ def main():
     print(42*'*')
     print(__doc__)
     print(42*'*')
-    print('sys.path: ' + sys.path)
+
+    # print('os.path.abspath(''): ' + os.path.abspath(''))
+    script_location = os.path.dirname(os.path.realpath(sys.argv[0]))
+    print('script_location:', script_location)
+    print('change working directory to script_location.')
+    os.chdir(script_location)
     print(42*'*')
 
     # print(42*'*')
