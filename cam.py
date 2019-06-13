@@ -549,7 +549,9 @@ def main():
     )
     args = parser.parse_args()
 
-    print(args.output_filename)
+    print('device', args.device)
+    print('output_filename', args.output_filename)
+    print('output_filename', args.overlay_filename)
     cam = Cam(
         camera_device=args.device,
         output_filename_template=args.output_filename,
