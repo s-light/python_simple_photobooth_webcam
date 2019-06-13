@@ -45,9 +45,10 @@ class Cam():
 
         self.frame_size = (1080, 1920)
         self.result_image_size = self.frame_size
-        self.result_image = False
-        self.frame = False
-        self.frame_preview = False
+        self.result_image = None
+        self.frame = None
+        self.frame_preview = None
+        self.show_preview = True
         # self.preview_window_size = (1280, 1024)
         # self.frame_preview_size = self.preview_window_size
 
@@ -180,7 +181,17 @@ class Cam():
                 key = cv.waitKey(1000) & 0xFF
                 self.show_last_saved_frame_flag = False
             else:
-                cv.imshow(self.WINDOWNAME, self.frame_preview)
+                if self.show_preview:
+                    cv.imshow(self.WINDOWNAME, self.frame_preview)
+                else:
+                    temp = self.frame.copy()
+                    cv.putText(
+                        temp,
+                        'FULL RESOLUTION ACTIVE',
+                        (10, 50),
+                        cv.FONT_HERSHEY_SIMPLEX,
+                        1, (255, 255, 255), 2)
+                    cv.imshow(self.WINDOWNAME, temp)
                 # the & 0xFF is needed for 64-bit machines
                 key = cv.waitKey(1) & 0xFF
 
@@ -189,6 +200,8 @@ class Cam():
                 self.save_next_frame()
             elif key == ord('f'):
                 self.toggle_fullscreen()
+            elif key == ord('r'):
+                self.toggle_preview()
 
     def save_next_frame(self):
         """Save Next Captured Frame."""
@@ -221,6 +234,11 @@ class Cam():
                 self.WINDOWNAME,
                 cv.WND_PROP_FULLSCREEN,
                 cv.WINDOW_NORMAL)
+
+    def toggle_preview(self):
+        """Toggle preview."""
+        self.show_preview = not self.show_preview
+        print('toggle show_preview to', self.show_preview)
 
     def load_and_prepare_overlay_and_result_image(self):
         """Load overlay image."""
