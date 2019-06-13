@@ -94,7 +94,8 @@ class Cam():
         # print('frame_preview_size_4resize', self.frame_preview_size_4resize)
 
         prev_height, prev_width = self.frame_preview_size
-        cv.resizeWindow(self.WINDOWNAME, prev_width, prev_height)
+        if not self.fullscreen:
+            cv.resizeWindow(self.WINDOWNAME, prev_width, prev_height)
 
         print('-')
         self.init_frame_buffers()
