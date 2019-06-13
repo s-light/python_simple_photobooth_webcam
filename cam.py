@@ -43,12 +43,13 @@ class Cam():
         self.overlay_filename = overlay_filename
         self.overlay_position = (-107, -142)
 
-        self.frame_size = (1920, 1080)
+        self.frame_size = (1080, 1920)
         self.result_image_size = self.frame_size
         self.result_image = False
         self.frame = False
+        self.frame_preview = False
         # self.preview_window_size = (1280, 1024)
-        # self.preview_size = self.preview_window_size
+        # self.frame_preview_size = self.preview_window_size
 
         self.fullscreen = fullscreen
 
@@ -78,6 +79,26 @@ class Cam():
             cv.WINDOW_OPENGL)
         cv.setMouseCallback(self.WINDOWNAME, self.mouse_handler)
 
+        frame_height, frame_width = self.frame_size
+        # print('self.frame_size', self.frame_size)
+        # print('self.frame_size[0] → height', frame_height)
+        # print('self.frame_size[1] → width', frame_width)
+
+        self.save_next_frame_flag = False
+        self.show_last_saved_frame_flag = False
+
+        self.frame_preview_size = (frame_height//2, frame_width//2)
+        # print('self.frame_preview_size', self.frame_preview_size)
+        self.frame_preview_size_4resize = (
+            self.frame_preview_size[1], self.frame_preview_size[0])
+        # print('frame_preview_size_4resize', self.frame_preview_size_4resize)
+
+        prev_height, prev_width = self.frame_preview_size
+        cv.resizeWindow(self.WINDOWNAME, prev_width, prev_height)
+
+        print('-')
+        self.init_frame_buffers()
+
         # camera capture
         self.cap = cv.VideoCapture(self.camera_device)
         # set configuration for camera
@@ -88,14 +109,26 @@ class Cam():
         self.cap.set(cv.CAP_PROP_FPS, 30)
         # self.cap.set(cv.CAP_PROP_FRAME_WIDTH, 1280)
         # self.cap.set(cv.CAP_PROP_FRAME_HEIGHT, 720)
-        self.cap.set(cv.CAP_PROP_FRAME_WIDTH, self.frame_size[0])
-        self.cap.set(cv.CAP_PROP_FRAME_HEIGHT, self.frame_size[1])
+        self.cap.set(cv.CAP_PROP_FRAME_WIDTH, frame_width)
+        self.cap.set(cv.CAP_PROP_FRAME_HEIGHT, frame_height)
         # self.cap.set(cv.CAP_PROP_CONVERT_RGB, True)
+        # precapture some frames..
+        for index in range(10):
+            ret, self.frame = self.cap.read()
+        self.frame_preview = cv.resize(
+            self.frame, self.frame_preview_size_4resize)
+        # self.frame_preview = cv.resize(self.frame, (0,0), fx=0.5, fy=0.5)
+        # print('self.frame.shape', self.frame.shape)
+        # print('self.frame_preview_size', self.frame_preview_size)
+        # print('self.frame_preview.shape', self.frame_preview.shape)
 
-        self.save_next_frame_flag = False
-        self.show_last_saved_frame_flag = False
+        # init other things
+        # print('-')
+        self.load_and_prepare_overlay_and_result_image()
+        self.prepare_overlay_preview_and_result_image_preview()
 
-        self.load_overlay_and_prepare_result_image()
+        # done
+        ##########################################
 
     def stop(self):
         """Stop and free resources."""
@@ -118,18 +151,21 @@ class Cam():
     def run(self):
         """Run Photobooth."""
         run = True
-        # Capture first frame.
-        ret, self.frame = self.cap.read()
-        height, width = self.frame.shape[:2]
-        self.preview_size = (width//2, height//2)
-        frame_preview = cv.resize(self.frame, self.preview_size)
+        # print('run... self.frame_preview_size', self.frame_preview_size)
+        # print('run... self.frame_preview', self.frame_preview)
         while run:
             # frame_old = frame
             # Capture frame-by-frame
             ret, self.frame = self.cap.read()
-            frame_preview = cv.resize(self.frame, self.preview_size)
+            self.frame_preview = cv.resize(
+                self.frame, self.frame_preview_size_4resize)
 
             if self.save_next_frame_flag:
+                self.update_result_image_preview()
+                cv.imshow(self.WINDOWNAME, self.result_image_preview)
+                cv.waitKey(2000)
+                # now we have updated the gui
+                # so we can do the slow things
                 self.update_result_image()
                 cv.imwrite(self.output_filename_full, self.result_image)
                 print("saved as '" + self.output_filename_full + "'")
@@ -140,10 +176,10 @@ class Cam():
             if self.show_last_saved_frame_flag:
                 cv.imshow(self.WINDOWNAME, self.result_image)
                 # the & 0xFF is needed for 64-bit machines
-                key = cv.waitKey(5000) & 0xFF
+                key = cv.waitKey(1000) & 0xFF
                 self.show_last_saved_frame_flag = False
             else:
-                cv.imshow(self.WINDOWNAME, frame_preview)
+                cv.imshow(self.WINDOWNAME, self.frame_preview)
                 # the & 0xFF is needed for 64-bit machines
                 key = cv.waitKey(1) & 0xFF
 
@@ -185,13 +221,32 @@ class Cam():
                 cv.WND_PROP_FULLSCREEN,
                 cv.WINDOW_NORMAL)
 
-    def load_overlay_and_prepare_result_image(self):
+    def load_and_prepare_overlay_and_result_image(self):
         """Load overlay image."""
         self.overlay_img = cv.imread(
             self.overlay_filename, cv.IMREAD_UNCHANGED)
+        self.overlay_size = self.overlay_img.shape[:2]
+        # check if we need to move the frame or the overlay...
+        # negative overlay positions meaning we need to move the frame.
+        frame_pos_height, frame_pos_width = (0, 0)
+        overlay_pos_height, overlay_pos_width = self.overlay_position
+        if self.overlay_position[0] < 0:
+            frame_pos_height = self.overlay_position[0] * -1
+            overlay_pos_height = 0
+        if self.overlay_position[1] < 0:
+            frame_pos_width = self.overlay_position[1] * -1
+            overlay_pos_width = 0
+        self.overlay_position = (overlay_pos_height, overlay_pos_width)
+        self.frame_position = (frame_pos_height, frame_pos_width)
         # calculate result image size
-        overlay_height, overlay_width = self.overlay_img.shape[:2]
+        #
+        # TODO(s-light): fix this calculation..
+        # for now we just assume the overlay is bigger ;-)
+        self.result_image_size = self.overlay_size
+        #
+        # overlay_height, overlay_width = self.overlay_size
         # result_height, result_width = self.frame_size
+        # check what is bigger - frame or overlay
         # # handle bigger overlays then frame
         # x, y = self.overlay_pos
         # if x < 0:
@@ -204,14 +259,107 @@ class Cam():
         # if result_height < overlay_height:
         #     result_height = overlay_height
         # self.result_image_size = (result_width, result_height)
-        # TODO(s-light): fix this calculation..
-        # for now we just assume the overlay is bigger ;-)
-        self.result_image_size = (overlay_height, overlay_width)
-        # so we also need to move the frame and not the overlay
-        self.frame_position = (
-            self.overlay_position[0] * -1, self.overlay_position[1] * -1)
-        self.overlay_position = 0, 0
+
         self.reset_result_image()
+
+    def prepare_overlay_preview_and_result_image_preview(self):
+        """Load overlay image."""
+        # now calculate preview versions
+        self.overlay_preview_size = (
+            (
+                self.overlay_size[0]
+                * self.frame_preview_size[0]
+                // self.frame_size[0]
+            ),
+            (
+                self.overlay_size[1]
+                * self.frame_preview_size[1]
+                // self.frame_size[1]
+            ),
+        )
+        self.result_image_preview_size = (
+            (
+                self.result_image_size[0]
+                * self.frame_preview_size[0]
+                // self.frame_size[0]
+            ),
+            (
+                self.result_image_size[1]
+                * self.frame_preview_size[1]
+                // self.frame_size[1]
+            ),
+        )
+        self.frame_preview_position = (
+            (
+                self.frame_position[0]
+                * self.frame_preview_size[0]
+                // self.frame_size[0]
+            ),
+            (
+                self.frame_position[1]
+                * self.frame_preview_size[1]
+                // self.frame_size[1]
+            ),
+        )
+        self.overlay_preview_position = (
+            (
+                self.overlay_position[0]
+                * self.frame_preview_size[0]
+                // self.frame_size[0]
+            ),
+            (
+                self.overlay_position[1]
+                * self.frame_preview_size[1]
+                // self.frame_size[1]
+            ),
+        )
+        self.overlay_preview = cv.resize(
+            self.overlay_img,
+            (self.overlay_preview_size[1], self.overlay_preview_size[0]))
+        self.reset_result_image_preview()
+
+        # print('debug output')
+        # print('self.overlay_img.shape[:2]', self.overlay_img.shape[:2])
+        # print('size[0] == height')
+        # print('size[1] == width')
+        # # For a regular image image.shape[] will give you
+        # # height, width and channels, in that order.
+        # print('----')
+        # print('frame_size', self.frame_size)
+        # print('overlay_size', self.overlay_size)
+        # print('result_image_size', self.result_image_size)
+        # print('frame_position', self.frame_position)
+        # print('overlay_position', self.overlay_position)
+        # print('----')
+        # print('frame_preview_size', self.frame_preview_size)
+        # print('overlay_preview_size', self.overlay_preview_size)
+        # print('result_image_preview_size', self.result_image_preview_size)
+        # print('frame_preview_position', self.frame_preview_position)
+        # print('overlay_preview_position', self.overlay_preview_position)
+        # print('----')
+        # print('show overlay_preview')
+        # cv.imshow(self.WINDOWNAME, self.overlay_preview)
+        # cv.waitKey(2000)
+        # print('show result_image_preview')
+        # self.update_result_image_preview()
+        # cv.imshow(self.WINDOWNAME, self.result_image_preview)
+        # cv.waitKey(5000)
+        # print('----')
+        # print('done.')
+
+    def init_frame_buffers(self):
+        """Init frame buffers to white."""
+        n_channels = 3
+        height, width = self.frame_size
+        shape = (height, width, n_channels)
+        self.frame = np.full(shape, (0, 200, 255), dtype=np.uint8)
+        # cv.imshow(self.WINDOWNAME, self.frame)
+        # cv.waitKey(1000)
+        height, width = self.frame_preview_size
+        shape = (height, width, n_channels)
+        self.frame_preview = np.full(shape, (255, 200, 0), dtype=np.uint8)
+        # cv.imshow(self.WINDOWNAME, self.frame_preview)
+        # cv.waitKey(1000)
 
     def reset_result_image(self):
         """Reset result_image to transparent."""
@@ -231,50 +379,53 @@ class Cam():
         """Update result image."""
         self.reset_result_image()
         frame = cv.cvtColor(self.frame, cv.COLOR_RGB2RGBA).copy()
-        # self.overlay_image_alpha(
-        #     self.result_image, frame, self.frame_position)
-        # self.result_image[
-        #     100:(100+1080), 100:(100+1920)
-        # ] = frame[0:1080, 0:1920]
-        # self.result_image[
-        #     100:(100+1080), 100:(100+1920)
-        # ] = frame[0:frame.shape[0], 0:frame.shape[1]]
-        self.result_image[
-            self.frame_position[0]:(self.frame_position[0]+1080),
-            self.frame_position[1]:(self.frame_position[1]+1920)
-        ] = frame[0:frame.shape[0], 0:frame.shape[1]]
         self.overlay_image_alpha(
-            self.result_image, self.overlay_img, self.overlay_position)
+            self.result_image,
+            frame,
+            self.frame_position)
+        # self.result_image[
+        #     self.frame_position[1]:(self.frame_position[1]+1080),
+        #     self.frame_position[0]:(self.frame_position[0]+1920)
+        # ] = frame[0:frame.shape[0], 0:frame.shape[1]]
+        self.overlay_image_alpha(
+            self.result_image,
+            self.overlay_img,
+            self.overlay_position)
 
     # fast preview handling
-    # def reset_result_preview_image(self):
-    #     """Reset result_image to transparent."""
-    #     # create transparent image
-    #     # thanks for the example from
-    #     # https://stackoverflow.com/a/44595221/574981
-    #     # RGBA == 4
-    #     n_channels = 4
-    #     height, width = self.result_preview_image_size
-    #     shape = (height, width, n_channels)
-    #     # init to black
-    #     # self.result_image = np.zeros(shape, dtype=np.uint8)
-    #     # init to white but fully transparent
-    #     self.result_preview_image = np.full(
-    #         shape, (255, 255, 255, 0), dtype=np.uint8)
-    #
-    # def update_result_preview_image(self):
-    #     """Update result preview image."""
-    #     self.reset_result_preview_image()
-    #     frame = cv.cvtColor(self.frame_preview, cv.COLOR_RGB2RGBA).copy()
-    #     # self.overlay_image_alpha(
-    #     #     self.result_preview_image, frame, self.frame_position)
-    #     self.result_preview_image[
-    #         self.frame_position[0]:self.frame_position[1],
-    #         frame.shape[0]:frame.shape[1]
-    #     ] = frame
-    #     self.overlay_image_alpha(
-    #         self.result_preview_image, self.overlay_img, self.overlay_position)
+    def reset_result_image_preview(self):
+        """Reset result_image to transparent."""
+        # create transparent image
+        # thanks for the example from
+        # https://stackoverflow.com/a/44595221/574981
+        # RGBA == 4
+        n_channels = 4
+        height, width = self.result_image_preview_size
+        shape = (height, width, n_channels)
+        # init to black
+        # self.result_image = np.zeros(shape, dtype=np.uint8)
+        # init to white but fully transparent
+        self.result_image_preview = np.full(
+            shape, (255, 255, 255, 0), dtype=np.uint8)
 
+    def update_result_image_preview(self):
+        """Update result preview image."""
+        self.reset_result_image_preview()
+        frame = cv.cvtColor(self.frame_preview, cv.COLOR_RGB2RGBA).copy()
+        self.overlay_image_alpha(
+            self.result_image_preview,
+            frame,
+            self.frame_preview_position)
+        # self.result_image_preview[
+        #     self.frame_preview_position[0]:self.frame_preview_position[1],
+        #     frame.shape[0]:frame.shape[1]
+        # ] = frame
+        self.overlay_image_alpha(
+            self.result_image_preview,
+            self.overlay_preview,
+            self.overlay_preview_position)
+
+    # helper function
     def overlay_image_alpha(self, img, img_overlay, pos):
         """
         Overlay img_overlay on top of img at position.
