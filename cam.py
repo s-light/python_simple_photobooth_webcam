@@ -231,10 +231,43 @@ class Cam():
         """Update result image."""
         self.reset_result_image()
         frame = cv.cvtColor(self.frame, cv.COLOR_RGB2RGBA).copy()
-        self.overlay_image_alpha(
-            self.result_image, frame, self.frame_position)
+        # self.overlay_image_alpha(
+        #     self.result_image, frame, self.frame_position)
+        self.result_image[
+            0:0,
+            1920:1080
+        ] = frame
         self.overlay_image_alpha(
             self.result_image, self.overlay_img, self.overlay_position)
+
+    # fast preview handling
+    # def reset_result_preview_image(self):
+    #     """Reset result_image to transparent."""
+    #     # create transparent image
+    #     # thanks for the example from
+    #     # https://stackoverflow.com/a/44595221/574981
+    #     # RGBA == 4
+    #     n_channels = 4
+    #     height, width = self.result_preview_image_size
+    #     shape = (height, width, n_channels)
+    #     # init to black
+    #     # self.result_image = np.zeros(shape, dtype=np.uint8)
+    #     # init to white but fully transparent
+    #     self.result_preview_image = np.full(
+    #         shape, (255, 255, 255, 0), dtype=np.uint8)
+    #
+    # def update_result_preview_image(self):
+    #     """Update result preview image."""
+    #     self.reset_result_preview_image()
+    #     frame = cv.cvtColor(self.frame_preview, cv.COLOR_RGB2RGBA).copy()
+    #     # self.overlay_image_alpha(
+    #     #     self.result_preview_image, frame, self.frame_position)
+    #     self.result_preview_image[
+    #         self.frame_position[0]:self.frame_position[1],
+    #         frame.shape[0]:frame.shape[1]
+    #     ] = frame
+    #     self.overlay_image_alpha(
+    #         self.result_preview_image, self.overlay_img, self.overlay_position)
 
     def overlay_image_alpha(self, img, img_overlay, pos):
         """
@@ -296,7 +329,7 @@ def main():
 
     cam = '/dev/video_cam_C1'
     output_filename_default = "./captured/test_{date_part}.png"
-    overlay_filename_default = "./overlay/picture_frame__HelloWorld.png"
+    overlay_filename_default = "./overlay/picture_frame.png"
 
     parser = argparse.ArgumentParser(
         description="test cam."
