@@ -163,7 +163,7 @@ class Cam():
             if self.save_next_frame_flag:
                 self.update_result_image_preview()
                 cv.imshow(self.WINDOWNAME, self.result_image_preview)
-                cv.waitKey(2000)
+                cv.waitKey(2)
                 # now we have updated the gui
                 # so we can do the slow things
                 self.update_result_image()
