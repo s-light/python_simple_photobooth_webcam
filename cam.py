@@ -233,10 +233,16 @@ class Cam():
         frame = cv.cvtColor(self.frame, cv.COLOR_RGB2RGBA).copy()
         # self.overlay_image_alpha(
         #     self.result_image, frame, self.frame_position)
+        # self.result_image[
+        #     100:(100+1080), 100:(100+1920)
+        # ] = frame[0:1080, 0:1920]
+        # self.result_image[
+        #     100:(100+1080), 100:(100+1920)
+        # ] = frame[0:frame.shape[0], 0:frame.shape[1]]
         self.result_image[
-            0:0,
-            1920:1080
-        ] = frame
+            self.frame_position[0]:(self.frame_position[0]+1080),
+            self.frame_position[1]:(self.frame_position[1]+1920)
+        ] = frame[0:frame.shape[0], 0:frame.shape[1]]
         self.overlay_image_alpha(
             self.result_image, self.overlay_img, self.overlay_position)
 
@@ -337,11 +343,11 @@ def main():
 
     parser.add_argument(
         "-d",
-        "--camera-device",
+        "--device",
         help="specify camera device number to use. (defaults to {})".format(
             cam
         ),
-        metavar='INPUT_FILENAME',
+        metavar='DEVICE',
         default=cam
     )
     parser.add_argument(
@@ -375,7 +381,7 @@ def main():
 
     print(args.output_filename)
     cam = Cam(
-        camera_device=args.camera_device,
+        camera_device=args.device,
         output_filename_template=args.output_filename,
         overlay_filename=args.overlay_filename,
         fullscreen=args.fullscreen
