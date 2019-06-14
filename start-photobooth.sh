@@ -10,7 +10,7 @@ DISPLAY=:0.0 \
 XAUTHORITY=/home/pi/.Xauthority \
 /usr/bin/python3 \
     $base/cam.py \
-    --camera-device="/dev/video_cam_C1" \
+    --device="/dev/video_cam_C1" \
     --output_filename="$capture" \
     --overlay_filename="$overlay" \
     --fullscreen
