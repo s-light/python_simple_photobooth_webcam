@@ -4,11 +4,41 @@
 simple webcam based python / opencv photobooth.
 
 original this file was meant to pack all things related to camera...
-but for now it is what it is ;-)
+but for now it is what it is - the full photobooth ;-)
+
+written by Stefan Krüger git@s-light.eu, http://s-light.eu
+
 
 needs
     python3-opencv
     numpy
+
+
+
+
+******************************************
+MIT License
+
+Copyright (c) 2019 Stefan Krüger
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED AS IS, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
 """
 
 from datetime import datetime
@@ -101,8 +131,14 @@ class Cam():
         print('-')
         self.init_frame_buffers()
 
+        # show blank frame so that the window shows up early ;-)
+        cv.imshow(self.WINDOWNAME, self.frame)
+        cv.waitKey(1)
+
         # camera capture
+        print('self.camera_device', self.camera_device)
         self.cap = cv.VideoCapture(self.camera_device)
+        print('self.cap', self.cap)
         # set configuration for camera
         # self.cap.set(cv.CAP_PROP_FOURCC('M', 'J', 'P', 'G'))
         # self.cap.set(cv.CAP_PROP_FOURCC('MJPG'))
@@ -113,10 +149,19 @@ class Cam():
         # self.cap.set(cv.CAP_PROP_FRAME_HEIGHT, 720)
         self.cap.set(cv.CAP_PROP_FRAME_WIDTH, frame_width)
         self.cap.set(cv.CAP_PROP_FRAME_HEIGHT, frame_height)
+        print('CAP_PROP_FRAME_WIDTH', self.cap.get(cv.CAP_PROP_FRAME_WIDTH))
+        print('CAP_PROP_FRAME_HEIGHT', self.cap.get(cv.CAP_PROP_FRAME_HEIGHT))
         # self.cap.set(cv.CAP_PROP_CONVERT_RGB, True)
         # precapture some frames..
+        read_success_flag = True
         for index in range(10):
             ret, self.frame = self.cap.read()
+            if not ret:
+                read_success_flag = False
+            cv.waitKey(10)
+        print('read_success_flag', read_success_flag)
+        # print('self.frame', self.frame)
+        print('self.frame.shape', self.frame.shape)
         self.frame_preview = cv.resize(
             self.frame, self.frame_preview_size_4resize)
         # self.frame_preview = cv.resize(self.frame, (0,0), fx=0.5, fy=0.5)
@@ -159,6 +204,7 @@ class Cam():
             # frame_old = frame
             # Capture frame-by-frame
             ret, self.frame = self.cap.read()
+            # print('ret', ret)
             self.frame_preview = cv.resize(
                 self.frame, self.frame_preview_size_4resize)
 
@@ -516,7 +562,7 @@ def main():
     overlay_filename_default = "./overlay/picture_frame.png"
 
     parser = argparse.ArgumentParser(
-        description="test cam."
+        description="Simple Python / openCV based photobooth script."
     )
 
     parser.add_argument(
